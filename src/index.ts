@@ -7,22 +7,42 @@ dotenv.config();
 
 const app = express();
 
+const PORT = process.env.PORT || 3001;
 
 
+cors({
+    origin: (origin, callback) => {
+     
+      if (!origin) return callback(null, true);
 
-const corsOptions = {
-  origin: ["http://localhost:3000", "https://your-frontend-domain.com"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
+      
+      if (origin === "http://localhost:3000") {
+        return callback(null, true);
+      }
 
-app.use(cors(corsOptions));
+      
+      if (/\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked: ${origin}`));
+    },
+    credentials: true, 
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+
 
 app.use(express.json());
-
 app.use("/api", pipelineRouter);
 
-const PORT = process.env.PORT || 3001;
+app.use((_, res) => {
+  res.status(404).json({ message: "Route not found", status: "error" });
+});
+// app.use((err, req, res, next) => {
+//   console.error("error:", err.message);
+//   res.status(err.status || 500).json({ message: err.message || "Server error" });
+// });
 
 app.listen(PORT, () => {
   console.log(`Server running on ${PORT}`);
