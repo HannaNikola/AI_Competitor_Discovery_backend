@@ -1,4 +1,4 @@
-import { getEmbedding } from "../services/embeddings";
+import { getEmbedding } from "./embeddings";
 import { addVector, findSimilar } from "../lib/vectorDB";
 import { rerankCompetitors } from "./rerankCompetitors";
 

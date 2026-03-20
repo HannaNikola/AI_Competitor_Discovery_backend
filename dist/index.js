@@ -1,24 +1,18 @@
 "use strict";
-// import express from "express";
-// import cors from "cors";
-// // import pipelineRouter from "./routes/pipeline";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-// const app = express();
-// app.use(cors());
-// app.use(express.json());
-// // app.use("/api", pipelineRouter);
-// app.listen(3001, () => {
-//   console.log("Backend running on http://localhost:3001");
-// });
-// services/
-// analyzeStartup.ts
-// generateInsight.ts
-// embeddings.ts
-// rerankCompetitors.ts
-// scraper.ts
-// discoverStartups.ts
-// 📁 lib/
-// vectorDB.ts
-// schemas.ts
-// agentWorkflow.ts
-//# sourceMappingURL=index.js.map
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const pipeline_1 = __importDefault(require("./routes/pipeline"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
+app.use("/api", pipeline_1.default);
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+    console.log(`Server running on ${PORT}`);
+});

@@ -3,7 +3,7 @@ import { analyzeSturtup } from "../services/analyzeStartup";
 import { getEmbedding } from "../services/embeddings";
 import { generateInsight } from "../services/generateInsight";
 import { scrapeWebsite } from "../services/scraper";
-import { addVector, findSimilar } from "../lib/vectorDB";
+import { addVector, findSimilar } from "./vectorDB";
 import { discoverStartupsNode } from "../services/discoverStartups";
 import { rerankCompetitors } from "../services/rerankCompetitors";
 
