@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
-import pipelineRouter from "./routes/pipline";
+import pipelineRouter from "./routes/pipeline";
+import dotenv from "dotenv";
 
+dotenv.config();
 
 const app = express();
 
