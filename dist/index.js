@@ -44,7 +44,7 @@ app.use((0, cors_1.default)({
             origin === "http://127.0.0.1:3000") {
             return callback(null, true);
         }
-        if (/\.vercel\.app$/.test(origin)) {
+        if (origin === "https://ai-competitor-discovery.vercel.app") {
             return callback(null, true);
         }
         return callback(new Error(`CORS blocked: ${origin}`));

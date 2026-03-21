@@ -57,10 +57,9 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: (origin, callback) => {
-    
     if (!origin) return callback(null, true);
 
-    
+   
     if (
       origin === "http://localhost:3000" ||
       origin === "http://127.0.0.1:3000"
@@ -69,7 +68,7 @@ app.use(cors({
     }
 
     
-    if (/\.vercel\.app$/.test(origin)) {
+    if (origin === "https://ai-competitor-discovery.vercel.app") {
       return callback(null, true);
     }
 
