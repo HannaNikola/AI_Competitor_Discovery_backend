@@ -36,25 +36,29 @@ dotenv_1.default.config();
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3001;
+// CORS
 app.use((0, cors_1.default)({
     origin: (origin, callback) => {
         if (!origin)
             return callback(null, true);
-        if (origin === "http://localhost:3000")
+        if (origin === "http://localhost:3000" ||
+            origin === "http://127.0.0.1:3000" ||
+            /\.vercel\.app$/.test(origin)) {
             return callback(null, true);
-        if (/\.vercel\.app$/.test(origin))
-            return callback(null, true);
+        }
         return callback(new Error(`CORS blocked: ${origin}`));
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
 }));
+app.use((0, cors_1.default)());
 app.use(express_1.default.json());
 app.use("/api", pipeline_1.default);
-app.use((_, res) => {
-    res.status(404).json({ message: "Route not found", status: "error" });
+app.use((req, res) => {
+    res.status(404).json({
+        message: "Route not found",
+        status: "error",
+    });
 });
 app.listen(PORT, () => {
-    console.log(`Server running on ${PORT}`);
+    console.log(`Server running on port ${PORT}`);
 });
