@@ -3,7 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.scrapeWebsite = scrapeWebsite;
 const playwright_1 = require("playwright");
 async function scrapeWebsite(url) {
-    const browser = await playwright_1.chromium.launch();
+    const browser = await playwright_1.chromium.launch({
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        headless: true,
+    });
     const page = await browser.newPage();
     await page.goto(url, {
         waitUntil: "domcontentloaded",
