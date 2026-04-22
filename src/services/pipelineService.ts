@@ -16,7 +16,7 @@ import { checkCredits } from "../helpers/checkCredits";
 
 
 export const runPipeline = async (url: string) => {
-    await checkCredits();
+    // await checkCredits();
   const workflow = createAgentWorkflow();
   const result = await workflow.invoke({ url });
 
