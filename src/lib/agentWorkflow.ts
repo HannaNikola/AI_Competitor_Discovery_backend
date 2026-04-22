@@ -6,23 +6,22 @@ import { scrapeWebsite } from "../services/scraper";
 import { addVector, findSimilar } from "./vectorDB";
 import { discoverStartupsNode } from "../services/discoverStartups";
 import { rerankCompetitors } from "../services/rerankCompetitors";
+import { validatePageNode } from "../schema/validatePageNode";
 
-// 1. Определяем схему состояния (State)
-// Annotation.Root автоматически создает "каналы" и правила обновления
-const AgentStateAnnotation = Annotation.Root({
-  url: Annotation<string>,
-  websiteText: Annotation<string>,
-  analysis: Annotation<any>,
-  competitors: Annotation<any[]>,
-  insight: Annotation<any>,
-  discoveredStartups: Annotation<any[]>,
+
+export const AgentStateAnnotation = Annotation.Root({
+  url: Annotation<string>(),
+  websiteText: Annotation<string>(),
+  analysis: Annotation<any>(),
+  competitors: Annotation<any[]>(),
+  insight: Annotation<any>(),
+  discoveredStartups: Annotation<any[]>(),
 });
 
-// Тип для использования внутри функций
-type AgentState = typeof AgentStateAnnotation.State;
 
-// 2. Функции-узлы (Nodes)
-// получают текущее состояние и возвращают только то, что нужно обновить
+export type AgentState = typeof AgentStateAnnotation.State;
+
+
 
 async function scrapeNode(state: AgentState) {
   const text = await scrapeWebsite(state.url);
@@ -30,9 +29,44 @@ async function scrapeNode(state: AgentState) {
 }
 
 async function analysisNode(state: AgentState) {
-  if (!state.websiteText) throw new Error("Нет текста для анализа");
+  const text = state.websiteText?.trim();
 
-  const analysis = await analyzeSturtup(state.websiteText);
+  if (!text || text.length < 200) {
+    throw new Error(
+      "We couldn't extract enough information from this page. Please try a company homepage, product page, pricing page, or documentation page.",
+    );
+  }
+
+  const analysis = await analyzeSturtup(text);
+
+  const totalFields = 8;
+
+  const filledFields = [
+    analysis.product_category,
+    analysis.target_users?.length ? "target_users" : "",
+    analysis.key_value_proposition,
+    analysis.business_model,
+    analysis.short_summary,
+  ].filter(Boolean).length;
+
+  const emptyFields = totalFields - filledFields;
+
+  
+  if (emptyFields > 3) {
+    throw new Error(
+      "We couldn't identify enough information about this company or product. Please try a homepage, product page, pricing page, or documentation page.",
+    );
+  }
+
+  if (
+    analysis.business_model === "Unknown" &&
+    !analysis.product_category &&
+    !analysis.key_value_proposition
+  ) {
+    throw new Error(
+      "This website does not show enough signals of a startup or digital product.",
+    );
+  }
   return { analysis };
 }
 
@@ -41,10 +75,8 @@ async function competitorNode(state: AgentState) {
 
   const startups = state.discoveredStartups || [];
 
-  // 1 Эмбеддинг анализируемого стартапа
   const queryEmbedding = await getEmbedding(JSON.stringify(state.analysis));
 
-  // 2 Загружаем Product Hunt стартапы в vectorDB
   for (const s of startups) {
     const embedding = await getEmbedding(`${s.name} - ${s.description}`);
     addVector({
@@ -54,10 +86,7 @@ async function competitorNode(state: AgentState) {
     });
   }
 
-  // 3 Находим кандидатов
   const candidates = findSimilar(queryEmbedding, 10);
-
-  // 4 Опциональный rerank через GPT для точного порядка
   const competitors = await rerankCompetitors(state.analysis, candidates);
 
   return { competitors };
@@ -68,6 +97,7 @@ async function insightNode(state: AgentState) {
     state.analysis,
     state.competitors || [],
   );
+
   return { insight };
 }
 
@@ -76,13 +106,21 @@ export function createAgentWorkflow() {
 
     .addNode("discoverStartups", discoverStartupsNode)
     .addNode("scrapeWebsite", scrapeNode)
+
+    
+    .addNode("validatePageNode", validatePageNode)
+
     .addNode("analyzeStartup", analysisNode)
     .addNode("findCompetitors", competitorNode)
     .addNode("generateInsight", insightNode)
 
     .addEdge(START, "discoverStartups")
     .addEdge("discoverStartups", "scrapeWebsite")
-    .addEdge("scrapeWebsite", "analyzeStartup")
+
+    
+    .addEdge("scrapeWebsite", "validatePageNode")
+    .addEdge("validatePageNode", "analyzeStartup")
+
     .addEdge("analyzeStartup", "findCompetitors")
     .addEdge("findCompetitors", "generateInsight")
     .addEdge("generateInsight", END);

@@ -6,7 +6,6 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
-    
   },
   "keywords": [],
   "author": "",
@@ -30,6 +29,3 @@
     "typescript": "^5.9.3"
   }
 }
-
-
-
