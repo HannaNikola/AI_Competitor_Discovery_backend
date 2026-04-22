@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 
-import { headers } from "next/headers";
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
