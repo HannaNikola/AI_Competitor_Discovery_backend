@@ -10,7 +10,7 @@ export async function scrapeWebsite(url: string) {
 
   await page.goto(url, {
     waitUntil: "domcontentloaded",
-    timeout: 30000,
+    timeout: 60000,
   });
 
   const text = await page.evaluate(() => {
