@@ -21,3 +21,7 @@ export async function scrapeWebsite(url: string) {
 
   return text.slice(0, 8000);
 }
+
+
+
+
